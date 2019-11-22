@@ -7,7 +7,7 @@ import tensorflow as tf
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-def predict_json(project, model, request, version='v6'):
+def predict_json(project, model, request, version=None):
     """Send json data to a deployed model for prediction.
 
     Args:
@@ -25,7 +25,7 @@ def predict_json(project, model, request, version='v6'):
     # Create the ML Engine service object.
     # To authenticate set the environment variable
     # GOOGLE_APPLICATION_CREDENTIALS=<path_to_service_account_file>
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = '/Users/syedmustufainabbasrizvi/PycharmProjects/handdetector-1a38279b498c.json'
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] =  #<path_to_service_account_file>
     service = build('ml', 'v1')
     name = 'projects/{}/models/{}'.format(project, model)
     if version is not None:
