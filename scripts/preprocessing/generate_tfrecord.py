@@ -41,6 +41,8 @@ def create_tf_example(name, image_dir, annot_dir):
     with tf.gfile.GFile(image_path, 'rb') as fid:
         encoded_jpg = fid.read()
     encoded_jpg_io = io.BytesIO(encoded_jpg)
+    print (encoded_jpg)
+    exit(1)
     image = Image.open(encoded_jpg_io)
     width, height = image.size
     filename = name.encode('utf8')
