@@ -62,7 +62,7 @@ python export_inference_graph \
 
 Now pick the model of your choice and move it to the **tf_serving** folder by running the following command:
 
-```mv exported_graphs/test.sh ../../tf_serving/1/```
+```mv exported_graphs/. ../../tf_serving/1/```
 
 Now your model is versioned and we can start with Tensor flow serving.
 
