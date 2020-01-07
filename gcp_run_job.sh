@@ -1,3 +1,4 @@
+#!/bin/bash
 cd models/research
 JOB_NAME=object_detection"_$(date +%m_%d_%Y_%H_%M_%S)"
 echo $JOB_NAME

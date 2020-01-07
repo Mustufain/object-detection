@@ -8,31 +8,10 @@ sys.path.append("./models/research/object_detection")
 from utils import label_map_util
 from utils import visualization_utils as vis_util
 from definitions import ROOT_DIR
-from PIL import Image
-import io
 import base64
-import os
 import json
 import requests
 import time
-
-# List of the strings that is used to add correct label for each box.
-PATH_TO_LABELS = ROOT_DIR + '/workspace/training_demo/data/label_map.pbtxt'
-
-# Number of classes to detect
-NUM_CLASSES = 1
-
-
-# Loading label map
-# Label maps map indices to category names, so that when our convolution network predicts `1`, we know that this corresponds
-# to `hand`.  Here we use internal utility functions,
-# but anything that returns a dictionary mapping integers to appropriate string labels would be fine
-
-label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
-categories = label_map_util.convert_label_map_to_categories(
-    label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
-category_index = label_map_util.create_category_index(categories)
-
 
 def prepare_request(image):
     with tf.gfile.GFile(image, 'rb') as fid:
@@ -41,36 +20,12 @@ def prepare_request(image):
     input_string = encoded_input_string.decode("utf-8")
     instance = [{'image_bytes': {"b64": input_string}}]
     data = json.dumps({"instances": instance})
+    with open('input.json', 'w') as f:
+        f.write(data)
     return [input, data]
 
 
-def get_iou(box1, box2):
-    """Implement the intersection over union (IoU) between box1 and box2
-        
-        Arguments:
-        box1 -- first box, numpy array with coordinates (ymin, xmin, ymax, xmax)
-        box2 -- second box, numpy array with coordinates (ymin, xmin, ymax, xmax)
-        """
-    # ymin, xmin, ymax, xmax = box
-    print (box1, box2)
-    y11, x11, y21, x21 = box1
-    y12, x12, y22, x22 = box2
-
-    yi1 = max(y11, y12)
-    xi1 = max(x11, x12)
-    yi2 = min(y21, y22)
-    xi2 = min(x21, x22)
-    inter_area = max(((xi2 - xi1) * (yi2 - yi1)), 0)
-    # Calculate the Union area by using Formula: Union(A,B) = A + B - Inter(A,B)
-    box1_area = (x21 - x11) * (y21 - y11)
-    box2_area = (x22 - x12) * (y22 - y12)
-    union_area = box1_area + box2_area - inter_area
-    # compute the IoU
-    iou = inter_area / union_area
-    return iou
-
-
-def non_max_suppression(boxes, probs, overlapthresh=0.5):
+def non_max_suppression(boxes, probs, overlapthresh=0.9):
     """
         Applies Non-max suppression (NMS) to set of boxes.
 
@@ -169,43 +124,28 @@ def visualize(input, boxes, classes, scores):
         line_thickness=8)
 
 
-from sagemaker.tensorflow.serving import Model,  Predictor
-from sagemaker.tensorflow import TensorFlowPredictor
-#model = Model(model_data='s3://my-sage-maker-test/faster_rcnn.tar.gz',
-#              role='arn:aws:iam::646335046581:role/service-role/AmazonSageMaker-ExecutionRole-20191125T144296',
-#              framework_version="1.12")
-#predictor = model.deploy(initial_instance_count=1,
-#                         instance_type='ml.p3.16xlarge')
+if __name__ == '__main__':
 
-#exit(1)
-image = 'test_image/test_4.jpg'
-endpoint = 'sagemaker-tensorflow-serving-2019-11-25-18-54-08-150'
-#input, data = prepare_request(image)
-with tf.gfile.GFile('test_image/test_3.jpg', 'rb') as fid:
-    encoded_jpg = base64.b64encode(fid.read())
-image_base64 = encoded_jpg.decode()
-data = {"instances": [{"image_bytes": {"b64": image_base64}}]}
-predictor = Predictor(endpoint)
-response = predictor.predict(data)
-print (response)
+    image = sys.argv[1]
+    # List of the strings that is used to add correct label for each box.
+    PATH_TO_LABELS = ROOT_DIR + '/workspace/training_demo/data/label_map.pbtxt'
 
+    # Number of classes to detect
+    NUM_CLASSES = 1
 
+    # Loading label map
+    # Label maps map indices to category names, so that when our convolution network predicts `1`, we know that this corresponds
+    # to `hand`.  Here we use internal utility functions,
+    # but anything that returns a dictionary mapping integers to appropriate string labels would be fine
 
-exit(1)
-start_time = time.time()
-image = 'test_image/test_4.jpg'
-input, data = prepare_request(image)
-boxes, classes, scores = get_predictions(data)
-boxes, classes, scores = post_process(boxes, classes, scores)
-#visualize(input, boxes, classes, scores)
-#cv2.imshow('window', cv2.resize(input, (800, 600)))
-#cv2.waitKey()
-end_time = time.time()
-
-execution_time = end_time - start_time
-print (execution_time)
-
-
-
-# on my machine inference time = 26 seconds
-# train = 1.12 tf version
+    label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
+    categories = label_map_util.convert_label_map_to_categories(
+        label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
+    category_index = label_map_util.create_category_index(categories)
+    start_time = time.time()
+    input, data = prepare_request(image)
+    boxes, classes, scores = get_predictions(data)
+    boxes, classes, scores = post_process(boxes, classes, scores)
+    visualize(input, boxes, classes, scores)
+    cv2.imshow('window', cv2.resize(input, (800, 600)))
+    keypress = cv2.waitKey()

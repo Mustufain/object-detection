@@ -2,6 +2,6 @@ models/
 __pycache__/
 .idea/
 .DS_Store
-test_image/
 *.json
 *.gz
+predict.py
