@@ -3,7 +3,7 @@ wget http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet10
 
 tar -xvf faster_rcnn_resnet101_coco_2018_01_28.tar.gz
 
-cp models/research/object_detection/samples/configs/faster_rcnn_resnet101_coco.config .
+cp $PWD/models/research/object_detection/samples/configs/faster_rcnn_resnet101_coco.config .
 
 sed -i "" "s|PATH_TO_BE_CONFIGURED|"gs://$1"/data|g" faster_rcnn_resnet101_coco.config
 sed -i "" "s|mscoco_label_map.pbtxt|label_map.pbtxt|g" faster_rcnn_resnet101_coco.config
